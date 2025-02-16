@@ -1,0 +1,134 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Resources:
+  # S3 Bucket for storing Lambda functions (если нужен)
+  LambdaCodeBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: 'final-project-robodreams'
+
+  # DynamoDB Table for Teams
+  TeamsTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: 'Teams'
+      AttributeDefinitions:
+        - AttributeName: 'id'
+          AttributeType: 'S'
+      KeySchema:
+        - AttributeName: 'id'
+          KeyType: 'HASH'
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  # DynamoDB Table for Events
+  EventsTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: 'Events'
+      AttributeDefinitions:
+        - AttributeName: 'id'
+          AttributeType: 'S'
+      KeySchema:
+        - AttributeName: 'id'
+          KeyType: 'HASH'
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  # Lambda function to create team
+  CreateTeamFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'create_team'
+      Handler: 'create_team.lambda_handler'
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: 'final-project-robodreams'
+        S3Key: 'lambdaFunctions/create_team.py'  # Путь в S3
+      Runtime: 'python3.8'
+
+  # Lambda function to get team
+  GetTeamFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'get_team'
+      Handler: 'get_team.lambda_handler'
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: 'final-project-robodreams'
+        S3Key: 'lambdaFunctions/get_team.py'  # Путь в S3
+      Runtime: 'python3.8'
+
+  # Lambda function to update team
+  UpdateTeamFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'update_team'
+      Handler: 'update_team.lambda_handler'
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: 'final-project-robodreams'
+        S3Key: 'lambdaFunctions/update_team.py'  # Путь в S3
+      Runtime: 'python3.8'
+
+  # Lambda function to create event
+  CreateEventFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'create_event'
+      Handler: 'create_event.lambda_handler'
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: 'final-project-robodreams'
+        S3Key: 'lambdaFunctions/create_event.py'  # Путь в S3
+      Runtime: 'python3.8'
+
+  # Lambda function to get event
+  GetEventFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'get_event'
+      Handler: 'get_event.lambda_handler'
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: 'final-project-robodreams'
+        S3Key: 'lambdaFunctions/get_event.py'  # Путь в S3
+      Runtime: 'python3.8'
+
+  # Lambda function to update event
+  UpdateEventFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'update_event'
+      Handler: 'update_event.lambda_handler'
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: 'final-project-robodreams'
+        S3Key: 'lambdaFunctions/update_event.py'  # Путь в S3
+      Runtime: 'python3.8'
+
+  # Permissions to allow Lambda functions to interact with DynamoDB
+  LambdaExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Action: 'sts:AssumeRole'
+            Principal:
+              Service: 'lambda.amazonaws.com'
+      Policies:
+        - PolicyName: 'LambdaDynamoDBPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 'dynamodb:PutItem'
+                  - 'dynamodb:GetItem'
+                  - 'dynamodb:UpdateItem'
+                Resource: '*'
+
