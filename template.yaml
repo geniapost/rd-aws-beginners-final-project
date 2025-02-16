@@ -142,6 +142,13 @@ Resources:
       PathPart: "teams"
       RestApiId: !Ref ApiGateway
 
+  TeamsIdResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref TeamsResource
+      PathPart: "{id}"  # Параметр пути для id
+      RestApiId: !Ref ApiGateway
+
   EventsResource:
     Type: AWS::ApiGateway::Resource
     Properties:
@@ -149,13 +156,20 @@ Resources:
       PathPart: "events"
       RestApiId: !Ref ApiGateway
 
-  # Methods
+  EventsIdResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref EventsResource
+      PathPart: "{id}"  # Параметр пути для id
+      RestApiId: !Ref ApiGateway
+
+  # Methods for Teams
   TeamsPostMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       AuthorizationType: NONE
       HttpMethod: POST
-      ResourceId: !Ref TeamsResource
+      ResourceId: !Ref TeamsResource  # Используем TeamsResource
       RestApiId: !Ref ApiGateway
       Integration:
         Type: AWS_PROXY
@@ -167,7 +181,7 @@ Resources:
     Properties:
       AuthorizationType: NONE
       HttpMethod: GET
-      ResourceId: !Ref TeamsResource
+      ResourceId: !Ref TeamsIdResource
       RestApiId: !Ref ApiGateway
       Integration:
         Type: AWS_PROXY
@@ -179,19 +193,20 @@ Resources:
     Properties:
       AuthorizationType: NONE
       HttpMethod: PUT
-      ResourceId: !Ref TeamsResource
+      ResourceId: !Ref TeamsIdResource
       RestApiId: !Ref ApiGateway
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
         Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateTeamFunction.Arn}/invocations"
 
+  # Methods for Events
   EventsPostMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       AuthorizationType: NONE
       HttpMethod: POST
-      ResourceId: !Ref EventsResource
+      ResourceId: !Ref EventsResource  # Используем EventsResource
       RestApiId: !Ref ApiGateway
       Integration:
         Type: AWS_PROXY
@@ -203,7 +218,7 @@ Resources:
     Properties:
       AuthorizationType: NONE
       HttpMethod: GET
-      ResourceId: !Ref EventsResource
+      ResourceId: !Ref EventsIdResource
       RestApiId: !Ref ApiGateway
       Integration:
         Type: AWS_PROXY
@@ -215,7 +230,7 @@ Resources:
     Properties:
       AuthorizationType: NONE
       HttpMethod: PUT
-      ResourceId: !Ref EventsResource
+      ResourceId: !Ref EventsIdResource
       RestApiId: !Ref ApiGateway
       Integration:
         Type: AWS_PROXY
@@ -235,6 +250,48 @@ Resources:
     Properties:
       RestApiId: !Ref ApiGateway
       StageName: "prod"
+
+  LambdaApiGatewayPermissionCreateTeam:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref CreateTeamFunction
+      Principal: apigateway.amazonaws.com
+
+  LambdaApiGatewayPermissionGetTeam:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GetTeamFunction
+      Principal: apigateway.amazonaws.com
+
+  LambdaApiGatewayPermissionUpdateTeam:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref UpdateTeamFunction
+      Principal: apigateway.amazonaws.com
+
+  LambdaApiGatewayPermissionCreateEvent:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref CreateEventFunction
+      Principal: apigateway.amazonaws.com
+
+  LambdaApiGatewayPermissionGetEvent:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GetEventFunction
+      Principal: apigateway.amazonaws.com
+
+  LambdaApiGatewayPermissionUpdateEvent:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref UpdateEventFunction
+      Principal: apigateway.amazonaws.com
 
 Outputs:
   ApiGatewayInvokeURL:
